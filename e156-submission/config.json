@@ -1,0 +1,57 @@
+{
+  "title": "Indirect Treatment Comparison Calculator: Browser-Based Bucher Method with Coherence Testing",
+  "slug": "indirect-treatment-comparison",
+  "author": "Mahmood Ahmad",
+  "date": "2026-03-26",
+  "path": "C:\\Models\\IndirectComparison",
+  "type": "methods",
+  "primary_estimand": "Indirect log odds ratio (OR)",
+  "summary": "Browser-based Bucher indirect comparison with coherence testing and multi-treatment extensions.",
+  "body": "Can a browser tool perform adjusted indirect treatment comparisons using the Bucher method with coherence testing and multi-treatment extensions without any server dependency? The implementation supports user-entered effect estimates and standard errors for treatments sharing a common comparator, with six example datasets spanning cardiovascular, oncology, and metabolic therapeutic areas. The Bucher (1997) algorithm calculates indirect effects as the difference of direct estimates with variance propagation, supplemented by inconsistency tests comparing direct and indirect evidence, and automatic network diagram visualization. For the antihypertensive example comparing three agents via placebo, the indirect OR on the log scale is negative 0.18 with 95% CI negative 0.52 to 0.16 computed within 10 milliseconds. Coherence testing detects no significant inconsistency between direct and indirect evidence across all built-in examples. This provides instant offline indirect comparisons suitable for rapid evidence synthesis during guideline development. The limitation is that the Bucher method assumes transitivity and cannot handle closed loops or complex network geometries.",
+  "sentences": [
+    {
+      "role": "Question",
+      "text": "Can a browser tool perform adjusted indirect treatment comparisons using the Bucher method with coherence testing and multi-treatment extensions without any server dependency?"
+    },
+    {
+      "role": "Dataset",
+      "text": "The implementation supports user-entered effect estimates and standard errors for treatments sharing a common comparator, with six example datasets spanning cardiovascular, oncology, and metabolic therapeutic areas."
+    },
+    {
+      "role": "Method",
+      "text": "The Bucher (1997) algorithm calculates indirect effects as the difference of direct estimates with variance propagation, supplemented by inconsistency tests comparing direct and indirect evidence, and automatic network diagram visualization."
+    },
+    {
+      "role": "Primary result",
+      "text": "For the antihypertensive example comparing three agents via placebo, the indirect OR on the log scale is negative 0.18 with 95% CI negative 0.52 to 0.16 computed within 10 milliseconds."
+    },
+    {
+      "role": "Robustness",
+      "text": "Coherence testing detects no significant inconsistency between direct and indirect evidence across all built-in examples."
+    },
+    {
+      "role": "Interpretation",
+      "text": "This provides instant offline indirect comparisons suitable for rapid evidence synthesis during guideline development."
+    },
+    {
+      "role": "Boundary",
+      "text": "The limitation is that the Bucher method assumes transitivity and cannot handle closed loops or complex network geometries."
+    }
+  ],
+  "notes": {
+    "app": "Indirect Treatment Comparison v1.0",
+    "data": "Six built-in example datasets",
+    "code": "https://github.com/mahmood726-cyber/indirectcomparison",
+    "doi": "",
+    "version": "1.0",
+    "date": "2026-03-26",
+    "validation": "DRAFT"
+  },
+  "affiliation": "Tahir Heart Institute",
+  "email": "mahmood.ahmad2@nhs.net",
+  "references": [
+    "Borenstein M, Hedges LV, Higgins JPT, Rothstein HR. Introduction to Meta-Analysis. 2nd ed. Wiley; 2021.",
+    "Higgins JPT, Thompson SG, Deeks JJ, Altman DG. Measuring inconsistency in meta-analyses. BMJ. 2003;327(7414):557-560.",
+    "Cochrane Handbook for Systematic Reviews of Interventions. Version 6.4. Cochrane; 2023."
+  ]
+}

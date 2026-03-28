@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indirect Treatment Comparison (Bucher Method)</title>
+<style>
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border-light: #e2e8f0;
+  --border-medium: #cbd5e1;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-light: #dbeafe;
+  --success: #16a34a;
+  --success-light: #dcfce7;
+  --warning: #d97706;
+  --warning-light: #fef3c7;
+  --danger: #dc2626;
+  --danger-light: #fee2e2;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --font-mono: 'Consolas', 'Monaco', monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+}
+
+.dark-mode {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+  --border-light: #334155;
+  --border-medium: #475569;
+  --accent: #3b82f6;
+  --accent-hover: #60a5fa;
+  --accent-light: #1e3a5f;
+  --success: #22c55e;
+  --success-light: #14532d;
+  --warning: #f59e0b;
+  --warning-light: #422006;
+  --danger: #ef4444;
+  --danger-light: #450a0a;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.app-header {
+  background: linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%);
+  color: #fff;
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow-md);
+}
+
+.app-header h1 { font-size: var(--text-lg); font-weight: 700; }
+.app-header .subtitle { font-size: var(--text-sm); opacity: 0.85; margin-top: 2px; }
+
+.header-controls { display: flex; gap: var(--space-2); align-items: center; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font-sans);
+}
+.btn:hover { background: var(--bg-tertiary); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn--primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn--primary:hover { background: var(--accent-hover); }
+.btn--sm { padding: var(--space-1) var(--space-2); font-size: var(--text-xs); }
+.btn--danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+
+.tab-bar {
+  display: flex;
+  background: var(--bg-primary);
+  border-bottom: 2px solid var(--border-light);
+  padding: 0 var(--space-4);
+  overflow-x: auto;
+}
+
+.tab-btn {
+  padding: var(--space-2) var(--space-3);
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  font-family: var(--font-sans);
+}
+.tab-btn:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+.tab-btn[aria-selected="true"] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+.tab-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.tab-panel { display: none; padding: var(--space-4); max-width: 1100px; margin: 0 auto; }
+.tab-panel[aria-hidden="false"] { display: block; }
+
+.card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-3);
+}
+.card__header {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-light);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+.card__body { padding: var(--space-3); }
+
+.form-group { margin-bottom: var(--space-3); }
+.form-group label { display: block; font-size: var(--text-sm); font-weight: 500; margin-bottom: var(--space-1); color: var(--text-secondary); }
+
+.input, .select {
+  width: 100%;
+  padding: var(--space-2);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-family: var(--font-sans);
+}
+.input:focus, .select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-3); }
+@media (max-width: 700px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+
+.alert {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-3);
+}
+.alert-info { background: var(--accent-light); color: var(--accent); border: 1px solid var(--accent); }
+.alert-success { background: var(--success-light); color: var(--success); border: 1px solid var(--success); }
+.alert-warning { background: var(--warning-light); color: var(--warning); border: 1px solid var(--warning); }
+.alert-danger { background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger); }
+
+.result-box {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-2); }
+.stat-item { text-align: center; padding: var(--space-2); }
+.stat-item .stat-label { font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.stat-item .stat-value { font-size: var(--text-lg); font-weight: 700; color: var(--text-primary); margin-top: 2px; }
+
+.study-row { display: flex; gap: var(--space-2); align-items: end; margin-bottom: var(--space-2); flex-wrap: wrap; }
+.study-row .input { width: auto; flex: 1; min-width: 80px; }
+
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+.data-table th, .data-table td {
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--border-light);
+  text-align: center;
+}
+.data-table th { background: var(--bg-tertiary); font-weight: 600; }
+
+.code-block {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  white-space: pre-wrap;
+  overflow-x: auto;
+  max-height: 400px;
+  overflow-y: auto;
+  color: var(--text-primary);
+}
+
+.network-svg { display: block; margin: 0 auto; }
+
+.forest-row { display: flex; align-items: center; margin-bottom: var(--space-2); }
+.forest-label { width: 200px; font-size: var(--text-sm); font-weight: 500; flex-shrink: 0; }
+.forest-plot-area { flex: 1; position: relative; height: 24px; }
+
+.league-cell-sig { font-weight: 700; }
+.league-cell-ns { color: var(--text-muted); }
+
+.examples-bar { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-3); }
+
+#darkToggle { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: #fff; }
+#darkToggle:hover { background: rgba(255,255,255,0.15); }
+
+.hidden { display: none !important; }
+
+.multi-study-block {
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  margin-bottom: var(--space-2);
+  background: var(--bg-secondary);
+}
+</style>
+</head>
+<body>
+<header class="app-header">
+  <div>
+    <h1>Indirect Treatment Comparison</h1>
+    <div class="subtitle">Bucher method (1997) for adjusted indirect comparisons</div>
+  </div>
+  <div class="header-controls">
+    <button id="darkToggle" class="btn btn--sm" aria-label="Toggle dark mode">Dark Mode</button>
+  </div>
+</header>
+
+<div class="tab-bar" role="tablist" aria-label="Main navigation">
+  <button class="tab-btn" role="tab" aria-selected="true" aria-controls="panel-input" id="tab-input" tabindex="0">Data Input</button>
+  <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-results" id="tab-results" tabindex="-1">Results</button>
+  <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-multi" id="tab-multi" tabindex="-1">Multi-Comparison</button>
+  <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-report" id="tab-report" tabindex="-1">Report</button>
+</div>
+
+<!-- ======================== TAB 1: DATA INPUT ======================== -->
+<div id="panel-input" class="tab-panel" role="tabpanel" aria-hidden="false" aria-labelledby="tab-input">
+
+  <div class="examples-bar">
+    <span style="font-size:var(--text-sm);font-weight:600;align-self:center;">Load example:</span>
+    <button class="btn btn--sm" onclick="ITC.loadExample('antiplatelet')">Antiplatelet therapy</button>
+    <button class="btn btn--sm" onclick="ITC.loadExample('antidepressants')">Antidepressants</button>
+    <button class="btn btn--sm" onclick="ITC.loadExample('betablockers')">Beta-blockers</button>
+  </div>
+
+  <div class="card">
+    <div class="card__header">Effect Measure &amp; Treatment Names</div>
+    <div class="card__body">
+      <div class="grid-3">
+        <div class="form-group">
+          <label for="effectType">Effect type</label>
+          <select id="effectType" class="select">
+            <option value="logOR">log-OR (Odds Ratio)</option>
+            <option value="logRR">log-RR (Risk Ratio)</option>
+            <option value="SMD">SMD (Standardized Mean Difference)</option>
+            <option value="MD">MD (Mean Difference)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="inputMode">Input mode</label>
+          <select id="inputMode" class="select" onchange="ITC.toggleInputMode()">
+            <option value="summary">Summary (effect + SE)</option>
+            <option value="ci">Effect + 95% CI</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="multiStudy">Multiple studies per comparison</label>
+          <select id="multiStudy" class="select" onchange="ITC.toggleMultiStudy()">
+            <option value="no">No (single estimate)</option>
+            <option value="yes">Yes (pool with DL)</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="form-group">
+          <label for="treatA">Treatment A (common comparator)</label>
+          <input id="treatA" class="input" type="text" value="Placebo" placeholder="e.g. Placebo">
+        </div>
+        <div class="form-group">
+          <label for="treatB">Treatment B</label>
+          <input id="treatB" class="input" type="text" value="Drug B" placeholder="e.g. Drug B">
+        </div>
+        <div class="form-group">
+          <label for="treatC">Treatment C</label>
+          <input id="treatC" class="input" type="text" value="Drug C" placeholder="e.g. Drug C">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Single-study input -->
+  <div id="singleInputBlock">
+    <div class="card">
+      <div class="card__header" id="labelAB">Direct evidence: A vs B</div>
+      <div class="card__body">
+        <div class="grid-2" id="abSummary">
+          <div class="form-group">
+            <label for="abEffect">Effect estimate (log scale for OR/RR)</label>
+            <input id="abEffect" class="input" type="number" step="any" placeholder="e.g. 0.35">
+          </div>
+          <div class="form-group se-input">
+            <label for="abSE">Standard error</label>
+            <input id="abSE" class="input" type="number" step="any" min="0" placeholder="e.g. 0.12">
+          </div>
+          <div class="form-group ci-input hidden">
+            <label for="abCILow">95% CI lower</label>
+            <input id="abCILow" class="input" type="number" step="any" placeholder="e.g. 0.11">
+          </div>
+          <div class="form-group ci-input hidden">
+            <label for="abCIHigh">95% CI upper</label>
+            <input id="abCIHigh" class="input" type="number" step="any" placeholder="e.g. 0.59">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card__header" id="labelAC">Direct evidence: A vs C</div>
+      <div class="card__body">
+        <div class="grid-2" id="acSummary">
+          <div class="form-group">
+            <label for="acEffect">Effect estimate (log scale for OR/RR)</label>
+            <input id="acEffect" class="input" type="number" step="any" placeholder="e.g. 0.50">
+          </div>
+          <div class="form-group se-input">
+            <label for="acSE">Standard error</label>
+            <input id="acSE" class="input" type="number" step="any" min="0" placeholder="e.g. 0.15">
+          </div>
+          <div class="form-group ci-input hidden">
+            <label for="acCILow">95% CI lower</label>
+            <input id="acCILow" class="input" type="number" step="any" placeholder="e.g. 0.20">
+          </div>
+          <div class="form-group ci-input hidden">
+            <label for="acCIHigh">95% CI upper</label>
+            <input id="acCIHigh" class="input" type="number" step="any" placeholder="e.g. 0.80">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Multi-study input -->
+  <div id="multiInputBlock" class="hidden">
+    <div class="card">
+      <div class="card__header">Studies for A vs B <button class="btn btn--sm" style="float:right;" onclick="ITC.addStudyRow('ab')">+ Add Study</button></div>
+      <div class="card__body" id="abStudies">
+        <!-- rows added dynamically -->
+      </div>
+    </div>
+    <div class="card">
+      <div class="card__header">Studies for A vs C <button class="btn btn--sm" style="float:right;" onclick="ITC.addStudyRow('ac')">+ Add Study</button></div>
+      <div class="card__body" id="acStudies">
+        <!-- rows added dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Optional direct B vs C for coherence -->
+  <div class="card">
+    <div class="card__header">
+      Optional: Direct evidence B vs C (for coherence test)
+      <input type="checkbox" id="hasDirectBC" style="margin-left:var(--space-2);" onchange="ITC.toggleDirectBC()">
+    </div>
+    <div class="card__body hidden" id="bcBlock">
+      <div class="grid-2">
+        <div class="form-group">
+          <label for="bcEffect">Effect estimate</label>
+          <input id="bcEffect" class="input" type="number" step="any" placeholder="e.g. 0.15">
+        </div>
+        <div class="form-group">
+          <label for="bcSE">Standard error</label>
+          <input id="bcSE" class="input" type="number" step="any" min="0" placeholder="e.g. 0.18">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;">
+    <button class="btn btn--primary" onclick="ITC.compute()">Compute Indirect Comparison</button>
+    <button class="btn" onclick="ITC.saveData()">Save to localStorage</button>
+    <button class="btn" onclick="ITC.loadData()">Load saved data</button>
+    <button class="btn btn--danger btn--sm" onclick="ITC.clearAll()">Clear All</button>
+  </div>
+</div>
+
+<!-- ======================== TAB 2: RESULTS ======================== -->
+<div id="panel-results" class="tab-panel" role="tabpanel" aria-hidden="true" aria-labelledby="tab-results">
+  <div id="resultsContent">
+    <div class="alert alert-info">Enter data in the Data Input tab and click "Compute Indirect Comparison".</div>
+  </div>
+</div>
+
+<!-- ======================== TAB 3: MULTI-COMPARISON ======================== -->
+<div id="panel-multi" class="tab-panel" role="tabpanel" aria-hidden="true" aria-labelledby="tab-multi">
+  <div class="card">
+    <div class="card__header">Multi-Treatment Indirect Comparisons (4+ treatments with common comparator)</div>
+    <div class="card__body">
+      <div class="form-group">
+        <label for="multiComparator">Common comparator (A)</label>
+        <input id="multiComparator" class="input" type="text" value="Placebo" placeholder="e.g. Placebo">
+      </div>
+      <div class="form-group">
+        <label for="multiEffectType">Effect type</label>
+        <select id="multiEffectType" class="select">
+          <option value="logOR">log-OR</option>
+          <option value="logRR">log-RR</option>
+          <option value="SMD">SMD</option>
+          <option value="MD">MD</option>
+        </select>
+      </div>
+      <div id="multiTreatments">
+        <!-- dynamically populated -->
+      </div>
+      <div style="display:flex;gap:var(--space-2);margin-top:var(--space-3);">
+        <button class="btn btn--sm" onclick="ITC.addMultiTreatment()">+ Add Treatment</button>
+        <button class="btn btn--primary" onclick="ITC.computeMulti()">Compute All Indirect Comparisons</button>
+        <button class="btn btn--sm" onclick="ITC.loadMultiExample()">Load Example (4 treatments)</button>
+      </div>
+    </div>
+  </div>
+  <div id="multiResults"></div>
+</div>
+
+<!-- ======================== TAB 4: REPORT ======================== -->
+<div id="panel-report" class="tab-panel" role="tabpanel" aria-hidden="true" aria-labelledby="tab-report">
+  <div id="reportContent">
+    <div class="alert alert-info">Compute results first to generate the report.</div>
+  </div>
+</div>
+
+<script>
+/* ===================================================================
+   Indirect Treatment Comparison Tool (Bucher Method)
+   IIFE to avoid global pollution
+   =================================================================== */
+var ITC = (function() {
+  'use strict';
+
+  // ---- State ----
+  var lastResult = null;
+  var lastMultiResult = null;
+  var multiTreatmentCount = 2;
+  var STORAGE_KEY = 'itc-data';
+
+  // ---- Utility functions ----
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function csvSafe(val) {
+    if (val == null) return '';
+    var s = String(val);
+    if (s.indexOf(',') !== -1 || s.indexOf('"') !== -1 || s.indexOf('\n') !== -1) {
+      return '"' + s.replace(/"/g, '""') + '"';
+    }
+    // CSV formula injection guard (no dash - it corrupts negative numbers)
+    if (/^[=+@\t\r]/.test(s)) return "'" + s;
+    return s;
+  }
+
+  function fmt(x, d) {
+    if (x == null || !isFinite(x)) return 'N/A';
+    return x.toFixed(d != null ? d : 4);
+  }
+
+  function fmtP(p) {
+    if (p == null || !isFinite(p)) return 'N/A';
+    if (p < 0.001) return '< 0.001';
+    return p.toFixed(4);
+  }
+
+  // Standard normal CDF (Abramowitz & Stegun approximation)
+  function normalCDF(x) {
+    if (x < -8) return 0;
+    if (x > 8) return 1;
+    var t = 1 / (1 + 0.2316419 * Math.abs(x));
+    var d = 0.3989422804014327; // 1/sqrt(2*pi)
+    var p = d * Math.exp(-x * x / 2) *
+      (t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429)))));
+    return x > 0 ? 1 - p : p;
+  }
+
+  // Normal quantile (Beasley-Springer-Moro)
+  function normalQuantile(p) {
+    if (p <= 0) return -Infinity;
+    if (p >= 1) return Infinity;
+    if (p === 0.5) return 0;
+    var a = [
+      -3.969683028665376e+01, 2.209460984245205e+02,
+      -2.759285104469687e+02, 1.383577518672690e+02,
+      -3.066479806614716e+01, 2.506628277459239e+00
+    ];
+    var b = [
+      -5.447609879822406e+01, 1.615858368580409e+02,
+      -1.556989798598866e+02, 6.680131188771972e+01,
+      -1.328068155288572e+01
+    ];
+    var c = [
+      -7.784894002430293e-03, -3.223964580411365e-01,
+      -2.400758277161838e+00, -2.549732539343734e+00,
+      4.374664141464968e+00, 2.938163982698783e+00
+    ];
+    var d = [
+      7.784695709041462e-03, 3.224671290700398e-01,
+      2.445134137142996e+00, 3.754408661907416e+00
+    ];
+    var pLow = 0.02425, pHigh = 1 - pLow;
+    var q, r;
+    if (p < pLow) {
+      q = Math.sqrt(-2 * Math.log(p));
+      return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) /
+             ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+    } else if (p <= pHigh) {
+      q = p - 0.5; r = q * q;
+      return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5]) * q /
+             (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
+    } else {
+      q = Math.sqrt(-2 * Math.log(1 - p));
+      return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) /
+              ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+    }
+  }
+
+  // z critical for given alpha (default 0.05 -> 1.96)
+  var Z_ALPHA = 1.959964;
+
+  // ---- DerSimonian-Laird pooling ----
+  function poolDL(studies) {
+    // studies: array of {effect, se}
+    if (!studies || studies.length === 0) return null;
+    if (studies.length === 1) return { effect: studies[0].effect, se: studies[0].se, tau2: 0, I2: 0, k: 1 };
+
+    var k = studies.length;
+    var w = studies.map(function(s) { return 1 / (s.se * s.se); });
+    var sumW = w.reduce(function(a, b) { return a + b; }, 0);
+    var thetaFE = studies.reduce(function(a, s, i) { return a + w[i] * s.effect; }, 0) / sumW;
+
+    var Q = studies.reduce(function(a, s, i) {
+      return a + w[i] * Math.pow(s.effect - thetaFE, 2);
+    }, 0);
+
+    var sumW2 = w.reduce(function(a, wi) { return a + wi * wi; }, 0);
+    var C = sumW - sumW2 / sumW;
+    var tau2 = Math.max(0, (Q - (k - 1)) / C);
+
+    var wRE = studies.map(function(s) { return 1 / (s.se * s.se + tau2); });
+    var sumWRE = wRE.reduce(function(a, b) { return a + b; }, 0);
+    var thetaRE = studies.reduce(function(a, s, i) { return a + wRE[i] * s.effect; }, 0) / sumWRE;
+    var seRE = Math.sqrt(1 / sumWRE);
+
+    var I2 = k > 1 ? Math.max(0, (Q - (k - 1)) / Q) * 100 : 0;
+
+    return { effect: thetaRE, se: seRE, tau2: tau2, I2: I2, k: k, Q: Q };
+  }
+
+  // ---- SE from CI ----
+  function seFromCI(low, high) {
+    return (high - low) / (2 * Z_ALPHA);
+  }
+
+  // ---- Core Bucher method ----
+  function bucherMethod(thetaAB, seAB, thetaAC, seAC) {
+    var thetaBC = thetaAC - thetaAB;
+    var seBC = Math.sqrt(seAB * seAB + seAC * seAC);
+    var z = thetaBC / seBC;
+    var p = 2 * (1 - normalCDF(Math.abs(z)));
+    var ciLow = thetaBC - Z_ALPHA * seBC;
+    var ciHigh = thetaBC + Z_ALPHA * seBC;
+    return { effect: thetaBC, se: seBC, z: z, p: p, ciLow: ciLow, ciHigh: ciHigh };
+  }
+
+  // ---- Coherence test (Bucher inconsistency) ----
+  function coherenceTest(directEffect, directSE, indirectEffect, indirectSE) {
+    var diff = directEffect - indirectEffect;
+    var seDiff = Math.sqrt(directSE * directSE + indirectSE * indirectSE);
+    var z = diff / seDiff;
+    var p = 2 * (1 - normalCDF(Math.abs(z)));
+    return { diff: diff, se: seDiff, z: z, p: p };
+  }
+
+  // ---- Tab switching ----
+  function initTabs() {
+    var tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(function(tab) {
+      tab.addEventListener('click', function() { switchTab(tab.id); });
+      tab.addEventListener('keydown', function(e) {
+        var tabArr = Array.from(tabs);
+        var idx = tabArr.indexOf(tab);
+        if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+          e.preventDefault();
+          var next = e.key === 'ArrowRight' ? (idx + 1) % tabArr.length : (idx - 1 + tabArr.length) % tabArr.length;
+          switchTab(tabArr[next].id);
+          tabArr[next].focus();
+        }
+      });
+    });
+  }
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(function(t) {
+      t.setAttribute('aria-selected', 'false');
+      t.setAttribute('tabindex', '-1');
+    });
+    document.querySelectorAll('.tab-panel').forEach(function(p) {
+      p.setAttribute('aria-hidden', 'true');
+    });
+    var tab = document.getElementById(tabId);
+    tab.setAttribute('aria-selected', 'true');
+    tab.setAttribute('tabindex', '0');
+    var panelId = tab.getAttribute('aria-controls');
+    document.getElementById(panelId).setAttribute('aria-hidden', 'false');
+  }
+
+  // ---- Dark mode ----
+  function initDarkMode() {
+    var btn = document.getElementById('darkToggle');
+    var saved = localStorage.getItem('itc-dark-mode');
+    if (saved === 'true') document.body.classList.add('dark-mode');
+    btn.addEventListener('click', function() {
+      document.body.classList.toggle('dark-mode');
+      localStorage.setItem('itc-dark-mode', document.body.classList.contains('dark-mode'));
+    });
+  }
+
+  // ---- Input mode toggle ----
+  function toggleInputMode() {
+    var mode = document.getElementById('inputMode').value;
+    var seEls = document.querySelectorAll('.se-input');
+    var ciEls = document.querySelectorAll('.ci-input');
+    seEls.forEach(function(el) { el.classList.toggle('hidden', mode === 'ci'); });
+    ciEls.forEach(function(el) { el.classList.toggle('hidden', mode === 'summary'); });
+  }
+
+  // ---- Multi-study toggle ----
+  function toggleMultiStudy() {
+    var multi = document.getElementById('multiStudy').value === 'yes';
+    document.getElementById('singleInputBlock').classList.toggle('hidden', multi);
+    document.getElementById('multiInputBlock').classList.toggle('hidden', !multi);
+    if (multi && document.getElementById('abStudies').children.length === 0) {
+      addStudyRow('ab');
+      addStudyRow('ac');
+    }
+  }
+
+  // ---- Direct BC toggle ----
+  function toggleDirectBC() {
+    var checked = document.getElementById('hasDirectBC').checked;
+    document.getElementById('bcBlock').classList.toggle('hidden', !checked);
+  }
+
+  // ---- Multi-study rows ----
+  var studyCounters = { ab: 0, ac: 0 };
+
+  function addStudyRow(comp) {
+    studyCounters[comp]++;
+    var n = studyCounters[comp];
+    var container = document.getElementById(comp + 'Studies');
+    var row = document.createElement('div');
+    row.className = 'study-row';
+    row.id = comp + '-study-' + n;
+    row.innerHTML = '<input class="input" type="text" placeholder="Study name" data-field="name" style="max-width:140px;">' +
+      '<input class="input" type="number" step="any" placeholder="Effect" data-field="effect">' +
+      '<input class="input" type="number" step="any" min="0" placeholder="SE" data-field="se">' +
+      '<button class="btn btn--sm btn--danger" onclick="ITC.removeStudyRow(\'' + comp + '\',' + n + ')">X</button>';
+    container.appendChild(row);
+  }
+
+  function removeStudyRow(comp, n) {
+    var row = document.getElementById(comp + '-study-' + n);
+    if (row) row.remove();
+  }
+
+  function getMultiStudies(comp) {
+    var rows = document.querySelectorAll('#' + comp + 'Studies .study-row');
+    var studies = [];
+    rows.forEach(function(row) {
+      var eff = parseFloat(row.querySelector('[data-field="effect"]').value);
+      var se = parseFloat(row.querySelector('[data-field="se"]').value);
+      if (isFinite(eff) && isFinite(se) && se > 0) {
+        studies.push({ effect: eff, se: se, name: row.querySelector('[data-field="name"]').value || 'Study' });
+      }
+    });
+    return studies;
+  }
+
+  // ---- Get input data ----
+  function getInputData() {
+    var mode = document.getElementById('inputMode').value;
+    var multi = document.getElementById('multiStudy').value === 'yes';
+    var effectType = document.getElementById('effectType').value;
+    var treatA = document.getElementById('treatA').value.trim() || 'A';
+    var treatB = document.getElementById('treatB').value.trim() || 'B';
+    var treatC = document.getElementById('treatC').value.trim() || 'C';
+
+    var abEffect, abSE, acEffect, acSE;
+    var abPooled = null, acPooled = null;
+
+    if (multi) {
+      var abStudies = getMultiStudies('ab');
+      var acStudies = getMultiStudies('ac');
+      if (abStudies.length === 0 || acStudies.length === 0) {
+        return { error: 'Need at least one study per comparison when pooling.' };
+      }
+      abPooled = poolDL(abStudies);
+      acPooled = poolDL(acStudies);
+      abEffect = abPooled.effect;
+      abSE = abPooled.se;
+      acEffect = acPooled.effect;
+      acSE = acPooled.se;
+    } else if (mode === 'ci') {
+      abEffect = parseFloat(document.getElementById('abEffect').value);
+      var abLow = parseFloat(document.getElementById('abCILow').value);
+      var abHigh = parseFloat(document.getElementById('abCIHigh').value);
+      acEffect = parseFloat(document.getElementById('acEffect').value);
+      var acLow = parseFloat(document.getElementById('acCILow').value);
+      var acHigh = parseFloat(document.getElementById('acCIHigh').value);
+      if (!isFinite(abEffect) || !isFinite(abLow) || !isFinite(abHigh)) return { error: 'A vs B: need effect and CI bounds.' };
+      if (!isFinite(acEffect) || !isFinite(acLow) || !isFinite(acHigh)) return { error: 'A vs C: need effect and CI bounds.' };
+      abSE = seFromCI(abLow, abHigh);
+      acSE = seFromCI(acLow, acHigh);
+    } else {
+      abEffect = parseFloat(document.getElementById('abEffect').value);
+      abSE = parseFloat(document.getElementById('abSE').value);
+      acEffect = parseFloat(document.getElementById('acEffect').value);
+      acSE = parseFloat(document.getElementById('acSE').value);
+      if (!isFinite(abEffect) || !isFinite(abSE) || abSE <= 0) return { error: 'A vs B: need valid effect and SE > 0.' };
+      if (!isFinite(acEffect) || !isFinite(acSE) || acSE <= 0) return { error: 'A vs C: need valid effect and SE > 0.' };
+    }
+
+    var directBC = null;
+    if (document.getElementById('hasDirectBC').checked) {
+      var bcE = parseFloat(document.getElementById('bcEffect').value);
+      var bcS = parseFloat(document.getElementById('bcSE').value);
+      if (isFinite(bcE) && isFinite(bcS) && bcS > 0) {
+        directBC = { effect: bcE, se: bcS };
+      }
+    }
+
+    return {
+      effectType: effectType,
+      treatA: treatA, treatB: treatB, treatC: treatC,
+      abEffect: abEffect, abSE: abSE,
+      acEffect: acEffect, acSE: acSE,
+      abPooled: abPooled, acPooled: acPooled,
+      directBC: directBC
+    };
+  }
+
+  // ---- Compute ----
+  function compute() {
+    var data = getInputData();
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
+
+    var result = bucherMethod(data.abEffect, data.abSE, data.acEffect, data.acSE);
+    result.treatA = data.treatA;
+    result.treatB = data.treatB;
+    result.treatC = data.treatC;
+    result.effectType = data.effectType;
+    result.abEffect = data.abEffect;
+    result.abSE = data.abSE;
+    result.acEffect = data.acEffect;
+    result.acSE = data.acSE;
+    result.abPooled = data.abPooled;
+    result.acPooled = data.acPooled;
+    result.directBC = data.directBC;
+
+    if (data.directBC) {
+      result.coherence = coherenceTest(data.directBC.effect, data.directBC.se, result.effect, result.se);
+    }
+
+    lastResult = result;
+    renderResults(result);
+    renderReport(result);
+    switchTab('tab-results');
+  }
+
+  // ---- Effect type label ----
+  function effectLabel(et) {
+    var labels = { logOR: 'log-OR', logRR: 'log-RR', SMD: 'SMD', MD: 'MD' };
+    return labels[et] || et;
+  }
+
+  function isLogScale(et) {
+    return et === 'logOR' || et === 'logRR';
+  }
+
+  // ---- Render Results ----
+  function renderResults(r) {
+    var el = document.getElementById('resultsContent');
+    var eLabel = effectLabel(r.effectType);
+    var sig = r.p < 0.05;
+
+    var html = '';
+
+    // Pooling info
+    if (r.abPooled && r.abPooled.k > 1) {
+      html += '<div class="alert alert-info">' +
+        escapeHtml(r.treatA) + ' vs ' + escapeHtml(r.treatB) + ': pooled ' + r.abPooled.k + ' studies (DL), ' +
+        'tau&sup2;=' + fmt(r.abPooled.tau2) + ', I&sup2;=' + fmt(r.abPooled.I2, 1) + '%</div>';
+    }
+    if (r.acPooled && r.acPooled.k > 1) {
+      html += '<div class="alert alert-info">' +
+        escapeHtml(r.treatA) + ' vs ' + escapeHtml(r.treatC) + ': pooled ' + r.acPooled.k + ' studies (DL), ' +
+        'tau&sup2;=' + fmt(r.acPooled.tau2) + ', I&sup2;=' + fmt(r.acPooled.I2, 1) + '%</div>';
+    }
+
+    // Main result
+    html += '<div class="card"><div class="card__header">Indirect Estimate: ' +
+      escapeHtml(r.treatB) + ' vs ' + escapeHtml(r.treatC) + '</div><div class="card__body">';
+    html += '<div class="stat-grid">';
+    html += '<div class="stat-item"><div class="stat-label">' + escapeHtml(eLabel) + '</div><div class="stat-value">' + fmt(r.effect) + '</div></div>';
+    html += '<div class="stat-item"><div class="stat-label">SE</div><div class="stat-value">' + fmt(r.se) + '</div></div>';
+    html += '<div class="stat-item"><div class="stat-label">95% CI</div><div class="stat-value">[' + fmt(r.ciLow) + ', ' + fmt(r.ciHigh) + ']</div></div>';
+    html += '<div class="stat-item"><div class="stat-label">z</div><div class="stat-value">' + fmt(r.z) + '</div></div>';
+    html += '<div class="stat-item"><div class="stat-label">p-value</div><div class="stat-value" style="color:' + (sig ? 'var(--danger)' : 'var(--text-primary)') + ';">' + fmtP(r.p) + '</div></div>';
+
+    if (isLogScale(r.effectType)) {
+      var expEff = Math.exp(r.effect);
+      var expLabel = r.effectType === 'logOR' ? 'OR' : 'RR';
+      html += '<div class="stat-item"><div class="stat-label">' + escapeHtml(expLabel) + ' (exponentiated)</div><div class="stat-value">' +
+        fmt(expEff, 3) + ' [' + fmt(Math.exp(r.ciLow), 3) + ', ' + fmt(Math.exp(r.ciHigh), 3) + ']</div></div>';
+    }
+    html += '</div></div></div>';
+
+    // Coherence test
+    if (r.coherence) {
+      var coh = r.coherence;
+      var cohSig = coh.p < 0.05;
+      html += '<div class="card"><div class="card__header">Coherence Test (Direct vs Indirect)</div><div class="card__body">';
+      html += '<div class="' + (cohSig ? 'alert alert-warning' : 'alert alert-success') + '">';
+      html += cohSig ? 'Significant inconsistency detected (p=' + fmtP(coh.p) + '). Direct and indirect estimates may not be coherent.' :
+        'No significant inconsistency (p=' + fmtP(coh.p) + '). Direct and indirect estimates appear coherent.';
+      html += '</div>';
+      html += '<div class="stat-grid">';
+      html += '<div class="stat-item"><div class="stat-label">Direct ' + escapeHtml(r.treatB) + ' vs ' + escapeHtml(r.treatC) + '</div><div class="stat-value">' + fmt(r.directBC.effect) + ' (SE ' + fmt(r.directBC.se) + ')</div></div>';
+      html += '<div class="stat-item"><div class="stat-label">Indirect</div><div class="stat-value">' + fmt(r.effect) + ' (SE ' + fmt(r.se) + ')</div></div>';
+      html += '<div class="stat-item"><div class="stat-label">Difference</div><div class="stat-value">' + fmt(coh.diff) + '</div></div>';
+      html += '<div class="stat-item"><div class="stat-label">z (inconsistency)</div><div class="stat-value">' + fmt(coh.z) + '</div></div>';
+      html += '<div class="stat-item"><div class="stat-label">p-value</div><div class="stat-value" style="color:' + (cohSig ? 'var(--warning)' : 'var(--success)') + ';">' + fmtP(coh.p) + '</div></div>';
+      html += '</div></div></div>';
+    }
+
+    // Network diagram
+    html += '<div class="card"><div class="card__header">Network Diagram</div><div class="card__body">' +
+      renderNetworkSVG(r) + '</div></div>';
+
+    // Forest plot
+    html += '<div class="card"><div class="card__header">Forest Plot</div><div class="card__body">' +
+      renderForestSVG(r) + '</div></div>';
+
+    el.innerHTML = html;
+  }
+
+  // ---- Network SVG ----
+  function renderNetworkSVG(r) {
+    var w = 400, h = 300;
+    var cx = w / 2;
+    // Triangle: A top, B bottom-left, C bottom-right
+    var ax = cx, ay = 60;
+    var bx = 80, by = 240;
+    var cxx = 320, cy_ = 240;
+
+    var maxLineW = 8, minLineW = 1.5;
+    // Width proportional to 1/SE (precision)
+    var precAB = 1 / r.abSE;
+    var precAC = 1 / r.acSE;
+    var maxPrec = Math.max(precAB, precAC);
+    var wAB = Math.max(minLineW, (precAB / maxPrec) * maxLineW);
+    var wAC = Math.max(minLineW, (precAC / maxPrec) * maxLineW);
+
+    var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" class="network-svg" width="' + w + '" height="' + h + '" role="img" aria-label="Network diagram">';
+
+    // Direct edges (solid)
+    svg += '<line x1="' + ax + '" y1="' + ay + '" x2="' + bx + '" y2="' + by + '" stroke="var(--accent)" stroke-width="' + wAB + '" />';
+    svg += '<line x1="' + ax + '" y1="' + ay + '" x2="' + cxx + '" y2="' + cy_ + '" stroke="var(--accent)" stroke-width="' + wAC + '" />';
+
+    // Indirect edge (dashed)
+    svg += '<line x1="' + bx + '" y1="' + by + '" x2="' + cxx + '" y2="' + cy_ + '" stroke="var(--danger)" stroke-width="2" stroke-dasharray="8 4" />';
+
+    // Direct BC if exists
+    if (r.directBC) {
+      var precBC = 1 / r.directBC.se;
+      var wBC = Math.max(minLineW, (precBC / maxPrec) * maxLineW);
+      svg += '<line x1="' + bx + '" y1="' + (by - 4) + '" x2="' + cxx + '" y2="' + (cy_ - 4) + '" stroke="var(--success)" stroke-width="' + wBC + '" />';
+    }
+
+    // Nodes
+    var nodeR = 24;
+    var nodes = [
+      { x: ax, y: ay, label: r.treatA, color: 'var(--accent)' },
+      { x: bx, y: by, label: r.treatB, color: '#7c3aed' },
+      { x: cxx, y: cy_, label: r.treatC, color: '#7c3aed' }
+    ];
+    nodes.forEach(function(n) {
+      svg += '<circle cx="' + n.x + '" cy="' + n.y + '" r="' + nodeR + '" fill="' + n.color + '" stroke="var(--bg-primary)" stroke-width="2" />';
+      svg += '<text x="' + n.x + '" y="' + (n.y + 5) + '" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">' + escapeHtml(n.label.substring(0, 6)) + '</text>';
+    });
+
+    // Legend
+    svg += '<line x1="20" y1="20" x2="50" y2="20" stroke="var(--accent)" stroke-width="3" />';
+    svg += '<text x="55" y="24" fill="var(--text-secondary)" font-size="10">Direct</text>';
+    svg += '<line x1="20" y1="36" x2="50" y2="36" stroke="var(--danger)" stroke-width="2" stroke-dasharray="8 4" />';
+    svg += '<text x="55" y="40" fill="var(--text-secondary)" font-size="10">Indirect</text>';
+
+    svg += '</svg>';
+    return svg;
+  }
+
+  // ---- Forest plot SVG ----
+  function renderForestSVG(r) {
+    var estimates = [];
+
+    var abLow = r.abEffect - Z_ALPHA * r.abSE;
+    var abHigh = r.abEffect + Z_ALPHA * r.abSE;
+    estimates.push({ label: r.treatA + ' vs ' + r.treatB + ' (direct)', effect: r.abEffect, ciLow: abLow, ciHigh: abHigh, color: 'var(--accent)', type: 'direct' });
+
+    var acLow = r.acEffect - Z_ALPHA * r.acSE;
+    var acHigh = r.acEffect + Z_ALPHA * r.acSE;
+    estimates.push({ label: r.treatA + ' vs ' + r.treatC + ' (direct)', effect: r.acEffect, ciLow: acLow, ciHigh: acHigh, color: 'var(--accent)', type: 'direct' });
+
+    estimates.push({ label: r.treatB + ' vs ' + r.treatC + ' (indirect)', effect: r.effect, ciLow: r.ciLow, ciHigh: r.ciHigh, color: 'var(--danger)', type: 'indirect' });
+
+    if (r.directBC) {
+      var bcLow = r.directBC.effect - Z_ALPHA * r.directBC.se;
+      var bcHigh = r.directBC.effect + Z_ALPHA * r.directBC.se;
+      estimates.push({ label: r.treatB + ' vs ' + r.treatC + ' (direct)', effect: r.directBC.effect, ciLow: bcLow, ciHigh: bcHigh, color: 'var(--success)', type: 'direct-bc' });
+    }
+
+    // Determine range
+    var allVals = [];
+    estimates.forEach(function(e) { allVals.push(e.ciLow, e.ciHigh, e.effect); });
+    var minVal = Math.min.apply(null, allVals);
+    var maxVal = Math.max.apply(null, allVals);
+    var pad = (maxVal - minVal) * 0.15 || 0.5;
+    minVal -= pad;
+    maxVal += pad;
+
+    var svgW = 600, labelW = 220, plotW = svgW - labelW - 20;
+    var rowH = 36, topPad = 30;
+    var svgH = topPad + estimates.length * rowH + 20;
+
+    function xPos(val) { return labelW + 10 + ((val - minVal) / (maxVal - minVal)) * plotW; }
+
+    var svg = '<svg viewBox="0 0 ' + svgW + ' ' + svgH + '" class="network-svg" width="' + svgW + '" height="' + svgH + '" role="img" aria-label="Forest plot">';
+
+    // Null line
+    var nullVal = 0;
+    if (nullVal >= minVal && nullVal <= maxVal) {
+      svg += '<line x1="' + xPos(nullVal) + '" y1="' + topPad + '" x2="' + xPos(nullVal) + '" y2="' + (topPad + estimates.length * rowH) + '" stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="4 2" />';
+    }
+
+    estimates.forEach(function(e, i) {
+      var y = topPad + i * rowH + rowH / 2;
+
+      // Label
+      svg += '<text x="5" y="' + (y + 4) + '" fill="var(--text-primary)" font-size="11" font-weight="500">' + escapeHtml(e.label) + '</text>';
+
+      // CI line
+      svg += '<line x1="' + xPos(e.ciLow) + '" y1="' + y + '" x2="' + xPos(e.ciHigh) + '" y2="' + y + '" stroke="' + e.color + '" stroke-width="2" />';
+
+      // Diamond for point estimate
+      var px = xPos(e.effect);
+      var ds = e.type === 'indirect' ? 6 : 5;
+      if (e.type === 'indirect') {
+        svg += '<polygon points="' + (px - ds) + ',' + y + ' ' + px + ',' + (y - ds) + ' ' + (px + ds) + ',' + y + ' ' + px + ',' + (y + ds) + '" fill="' + e.color + '" />';
+      } else {
+        svg += '<rect x="' + (px - ds) + '" y="' + (y - ds) + '" width="' + (ds * 2) + '" height="' + (ds * 2) + '" fill="' + e.color + '" />';
+      }
+
+      // Value text
+      svg += '<text x="' + (svgW - 5) + '" y="' + (y + 4) + '" text-anchor="end" fill="var(--text-secondary)" font-size="10">' +
+        fmt(e.effect, 3) + ' [' + fmt(e.ciLow, 3) + ', ' + fmt(e.ciHigh, 3) + ']</text>';
+    });
+
+    svg += '</svg>';
+    return svg;
+  }
+
+  // ---- Render Report ----
+  function renderReport(r) {
+    var el = document.getElementById('reportContent');
+    var eLabel = effectLabel(r.effectType);
+
+    var html = '';
+
+    // Methods text
+    html += '<div class="card"><div class="card__header">Methods Text</div><div class="card__body">';
+    html += '<div class="result-box" id="methodsText">';
+    html += '<p>Adjusted indirect comparison was performed using the Bucher method (Bucher et al., 1997). ' +
+      'In the absence of direct head-to-head evidence comparing ' + escapeHtml(r.treatB) + ' and ' + escapeHtml(r.treatC) + ', ' +
+      'the indirect estimate was derived through the common comparator ' + escapeHtml(r.treatA) + '. ' +
+      'The indirect treatment effect was calculated as &theta;<sub>' + escapeHtml(r.treatC) + ' vs ' + escapeHtml(r.treatB) + '</sub> = ' +
+      '&theta;<sub>' + escapeHtml(r.treatA) + ' vs ' + escapeHtml(r.treatC) + '</sub> &minus; ' +
+      '&theta;<sub>' + escapeHtml(r.treatA) + ' vs ' + escapeHtml(r.treatB) + '</sub>, ' +
+      'with the standard error computed as SE = &radic;(SE<sub>AB</sub>&sup2; + SE<sub>AC</sub>&sup2;) (Song et al., 2003). ';
+    if (r.coherence) {
+      html += 'A test of inconsistency was performed to assess the coherence between direct and indirect estimates (Bucher et al., 1997). ';
+    }
+    html += 'Effect measure: ' + escapeHtml(eLabel) + '.</p>';
+    html += '</div>';
+    html += '<button class="btn btn--sm" onclick="ITC.copyText(\'methodsText\')">Copy text</button>';
+    html += '</div></div>';
+
+    // References
+    html += '<div class="card"><div class="card__header">References</div><div class="card__body">';
+    html += '<ul style="font-size:var(--text-sm);line-height:1.8;">';
+    html += '<li>Bucher HC, Guyatt GH, Griffith LE, Walter SD. The results of direct and indirect treatment comparisons in meta-analysis of randomized controlled trials. <em>J Clin Epidemiol</em>. 1997;50(6):683-691.</li>';
+    html += '<li>Song F, Altman DG, Glenny AM, Deeks JJ. Validity of indirect comparison for estimating efficacy of competing interventions: empirical evidence from published meta-analyses. <em>BMJ</em>. 2003;326(7387):472.</li>';
+    html += '<li>Glenny AM, Altman DG, Song F, et al. Indirect comparisons of competing interventions. <em>Health Technol Assess</em>. 2005;9(26):1-134.</li>';
+    html += '</ul></div></div>';
+
+    // R code
+    html += '<div class="card"><div class="card__header">R Code Equivalent</div><div class="card__body">';
+    html += '<pre class="code-block" id="rCode">';
+    html += '# Bucher indirect comparison\n';
+    html += '# Direct estimates (on ' + escapeHtml(eLabel) + ' scale)\n';
+    html += 'theta_AB &lt;- ' + fmt(r.abEffect) + '  # ' + escapeHtml(r.treatA) + ' vs ' + escapeHtml(r.treatB) + '\n';
+    html += 'SE_AB    &lt;- ' + fmt(r.abSE) + '\n';
+    html += 'theta_AC &lt;- ' + fmt(r.acEffect) + '  # ' + escapeHtml(r.treatA) + ' vs ' + escapeHtml(r.treatC) + '\n';
+    html += 'SE_AC    &lt;- ' + fmt(r.acSE) + '\n\n';
+    html += '# Indirect estimate: C vs B\n';
+    html += 'theta_BC &lt;- theta_AC - theta_AB\n';
+    html += 'SE_BC    &lt;- sqrt(SE_AB^2 + SE_AC^2)\n';
+    html += 'z_BC     &lt;- theta_BC / SE_BC\n';
+    html += 'p_BC     &lt;- 2 * (1 - pnorm(abs(z_BC)))\n';
+    html += 'CI_low   &lt;- theta_BC - qnorm(0.975) * SE_BC\n';
+    html += 'CI_high  &lt;- theta_BC + qnorm(0.975) * SE_BC\n\n';
+    html += 'cat(sprintf("Indirect %s: %.4f (95%% CI: %.4f, %.4f), p=%.4f\\n",\n';
+    html += '    "' + escapeHtml(eLabel) + '", theta_BC, CI_low, CI_high, p_BC))\n';
+    if (isLogScale(r.effectType)) {
+      html += '\n# Exponentiated\ncat(sprintf("' + (r.effectType === 'logOR' ? 'OR' : 'RR') + ': %.3f (%.3f, %.3f)\\n", exp(theta_BC), exp(CI_low), exp(CI_high)))\n';
+    }
+    if (r.coherence) {
+      html += '\n# Coherence test (Bucher inconsistency)\n';
+      html += 'theta_BC_direct &lt;- ' + fmt(r.directBC.effect) + '\n';
+      html += 'SE_BC_direct    &lt;- ' + fmt(r.directBC.se) + '\n';
+      html += 'diff    &lt;- theta_BC_direct - theta_BC\n';
+      html += 'SE_diff &lt;- sqrt(SE_BC_direct^2 + SE_BC^2)\n';
+      html += 'z_coh   &lt;- diff / SE_diff\n';
+      html += 'p_coh   &lt;- 2 * (1 - pnorm(abs(z_coh)))\n';
+      html += 'cat(sprintf("Inconsistency test: z=%.4f, p=%.4f\\n", z_coh, p_coh))\n';
+    }
+    html += '\n# Using netmeta package (alternative):\n';
+    html += '# library(netmeta)\n';
+    html += '# pairwise(treat=..., event=..., n=..., data=..., sm="' + (r.effectType === 'logOR' ? 'OR' : r.effectType === 'logRR' ? 'RR' : r.effectType) + '")\n';
+    html += '</pre>';
+    html += '<button class="btn btn--sm" onclick="ITC.copyText(\'rCode\')">Copy R code</button>';
+    html += '</div></div>';
+
+    // Export buttons
+    html += '<div style="display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-3);">';
+    html += '<button class="btn btn--primary btn--sm" onclick="ITC.exportCSV()">Export CSV</button>';
+    html += '<button class="btn btn--sm" onclick="ITC.exportJSON()">Export JSON</button>';
+    html += '</div>';
+
+    el.innerHTML = html;
+  }
+
+  // ---- Copy text ----
+  function copyText(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      navigator.clipboard.writeText(el.textContent).then(function() { alert('Copied to clipboard.'); });
+    }
+  }
+
+  // ---- Export CSV ----
+  function exportCSV() {
+    if (!lastResult) { alert('No results to export.'); return; }
+    var r = lastResult;
+    var rows = [];
+    rows.push(['Comparison', 'Type', 'Effect', 'SE', 'CI_Low', 'CI_High', 'z', 'p']);
+
+    var abLow = r.abEffect - Z_ALPHA * r.abSE;
+    var abHigh = r.abEffect + Z_ALPHA * r.abSE;
+    rows.push([r.treatA + ' vs ' + r.treatB, 'Direct', r.abEffect, r.abSE, abLow, abHigh, '', '']);
+
+    var acLow = r.acEffect - Z_ALPHA * r.acSE;
+    var acHigh = r.acEffect + Z_ALPHA * r.acSE;
+    rows.push([r.treatA + ' vs ' + r.treatC, 'Direct', r.acEffect, r.acSE, acLow, acHigh, '', '']);
+
+    rows.push([r.treatB + ' vs ' + r.treatC, 'Indirect (Bucher)', r.effect, r.se, r.ciLow, r.ciHigh, r.z, r.p]);
+
+    if (r.directBC) {
+      var bcL = r.directBC.effect - Z_ALPHA * r.directBC.se;
+      var bcH = r.directBC.effect + Z_ALPHA * r.directBC.se;
+      rows.push([r.treatB + ' vs ' + r.treatC, 'Direct', r.directBC.effect, r.directBC.se, bcL, bcH, '', '']);
+    }
+    if (r.coherence) {
+      rows.push(['Inconsistency test', '', r.coherence.diff, r.coherence.se, '', '', r.coherence.z, r.coherence.p]);
+    }
+
+    var csv = rows.map(function(row) { return row.map(csvSafe).join(','); }).join('\n');
+    downloadBlob(csv, 'itc-results.csv', 'text/csv');
+  }
+
+  // ---- Export JSON ----
+  function exportJSON() {
+    if (!lastResult) { alert('No results to export.'); return; }
+    var json = JSON.stringify(lastResult, null, 2);
+    downloadBlob(json, 'itc-results.json', 'application/json');
+  }
+
+  // ---- Download helper ----
+  function downloadBlob(content, filename, mime) {
+    var blob = new Blob([content], { type: mime });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // ---- localStorage ----
+  function saveData() {
+    var data = {
+      effectType: document.getElementById('effectType').value,
+      inputMode: document.getElementById('inputMode').value,
+      treatA: document.getElementById('treatA').value,
+      treatB: document.getElementById('treatB').value,
+      treatC: document.getElementById('treatC').value,
+      abEffect: document.getElementById('abEffect').value,
+      abSE: document.getElementById('abSE').value,
+      abCILow: document.getElementById('abCILow').value,
+      abCIHigh: document.getElementById('abCIHigh').value,
+      acEffect: document.getElementById('acEffect').value,
+      acSE: document.getElementById('acSE').value,
+      acCILow: document.getElementById('acCILow').value,
+      acCIHigh: document.getElementById('acCIHigh').value,
+      hasDirectBC: document.getElementById('hasDirectBC').checked,
+      bcEffect: document.getElementById('bcEffect').value,
+      bcSE: document.getElementById('bcSE').value,
+      savedAt: new Date().toISOString()
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    alert('Data saved.');
+  }
+
+  function loadData() {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) { alert('No saved data found.'); return; }
+    var data = JSON.parse(raw);
+    document.getElementById('effectType').value = data.effectType || 'logOR';
+    document.getElementById('inputMode').value = data.inputMode || 'summary';
+    document.getElementById('treatA').value = data.treatA || '';
+    document.getElementById('treatB').value = data.treatB || '';
+    document.getElementById('treatC').value = data.treatC || '';
+    document.getElementById('abEffect').value = data.abEffect || '';
+    document.getElementById('abSE').value = data.abSE || '';
+    document.getElementById('abCILow').value = data.abCILow || '';
+    document.getElementById('abCIHigh').value = data.abCIHigh || '';
+    document.getElementById('acEffect').value = data.acEffect || '';
+    document.getElementById('acSE').value = data.acSE || '';
+    document.getElementById('acCILow').value = data.acCILow || '';
+    document.getElementById('acCIHigh').value = data.acCIHigh || '';
+    document.getElementById('hasDirectBC').checked = !!data.hasDirectBC;
+    document.getElementById('bcEffect').value = data.bcEffect || '';
+    document.getElementById('bcSE').value = data.bcSE || '';
+    toggleInputMode();
+    toggleDirectBC();
+    alert('Data loaded (saved ' + (data.savedAt || 'unknown') + ').');
+  }
+
+  function clearAll() {
+    if (!confirm('Clear all input data?')) return;
+    ['abEffect', 'abSE', 'abCILow', 'abCIHigh', 'acEffect', 'acSE', 'acCILow', 'acCIHigh', 'bcEffect', 'bcSE'].forEach(function(id) {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('hasDirectBC').checked = false;
+    toggleDirectBC();
+    document.getElementById('resultsContent').innerHTML = '<div class="alert alert-info">Enter data and compute.</div>';
+    document.getElementById('reportContent').innerHTML = '<div class="alert alert-info">Compute results first.</div>';
+    lastResult = null;
+  }
+
+  // ---- Examples ----
+  function loadExample(name) {
+    document.getElementById('multiStudy').value = 'no';
+    toggleMultiStudy();
+    document.getElementById('inputMode').value = 'summary';
+    toggleInputMode();
+    document.getElementById('hasDirectBC').checked = false;
+    toggleDirectBC();
+
+    if (name === 'antiplatelet') {
+      document.getElementById('effectType').value = 'logOR';
+      document.getElementById('treatA').value = 'Placebo';
+      document.getElementById('treatB').value = 'Aspirin';
+      document.getElementById('treatC').value = 'Clopidogrel';
+      // Aspirin vs Placebo: OR ~ 0.77, logOR = -0.261, SE ~ 0.05
+      document.getElementById('abEffect').value = '-0.261';
+      document.getElementById('abSE').value = '0.050';
+      // Clopidogrel vs Placebo: OR ~ 0.68, logOR = -0.386, SE ~ 0.08
+      document.getElementById('acEffect').value = '-0.386';
+      document.getElementById('acSE').value = '0.080';
+    } else if (name === 'antidepressants') {
+      document.getElementById('effectType').value = 'SMD';
+      document.getElementById('treatA').value = 'Placebo';
+      document.getElementById('treatB').value = 'SSRI';
+      document.getElementById('treatC').value = 'SNRI';
+      // SSRI vs Placebo: SMD = 0.31, SE = 0.04
+      document.getElementById('abEffect').value = '0.31';
+      document.getElementById('abSE').value = '0.04';
+      // SNRI vs Placebo: SMD = 0.35, SE = 0.06
+      document.getElementById('acEffect').value = '0.35';
+      document.getElementById('acSE').value = '0.06';
+    } else if (name === 'betablockers') {
+      document.getElementById('effectType').value = 'logRR';
+      document.getElementById('treatA').value = 'Placebo';
+      document.getElementById('treatB').value = 'Atenolol';
+      document.getElementById('treatC').value = 'Metoprolol';
+      // Atenolol vs Placebo: RR ~ 0.85, logRR = -0.163, SE = 0.07
+      document.getElementById('abEffect').value = '-0.163';
+      document.getElementById('abSE').value = '0.070';
+      // Metoprolol vs Placebo: RR ~ 0.80, logRR = -0.223, SE = 0.09
+      document.getElementById('acEffect').value = '-0.223';
+      document.getElementById('acSE').value = '0.090';
+    }
+  }
+
+  // ---- Multi-comparison tab ----
+  function initMultiTreatments() {
+    multiTreatmentCount = 0;
+    document.getElementById('multiTreatments').innerHTML = '';
+    addMultiTreatment();
+    addMultiTreatment();
+  }
+
+  function addMultiTreatment() {
+    multiTreatmentCount++;
+    var n = multiTreatmentCount;
+    var container = document.getElementById('multiTreatments');
+    var div = document.createElement('div');
+    div.className = 'multi-study-block';
+    div.id = 'multiTreat-' + n;
+    div.innerHTML = '<div class="grid-3" style="align-items:end;">' +
+      '<div class="form-group"><label>Treatment name</label><input class="input" type="text" data-field="name" placeholder="Drug ' + String.fromCharCode(65 + n) + '"></div>' +
+      '<div class="form-group"><label>Effect vs comparator</label><input class="input" type="number" step="any" data-field="effect" placeholder="e.g. 0.35"></div>' +
+      '<div class="form-group"><label>SE</label><input class="input" type="number" step="any" min="0" data-field="se" placeholder="e.g. 0.12"></div>' +
+      '</div>' +
+      (n > 2 ? '<button class="btn btn--sm btn--danger" style="margin-top:var(--space-1);" onclick="ITC.removeMultiTreatment(' + n + ')">Remove</button>' : '');
+    container.appendChild(div);
+  }
+
+  function removeMultiTreatment(n) {
+    var el = document.getElementById('multiTreat-' + n);
+    if (el) el.remove();
+  }
+
+  function getMultiTreatmentData() {
+    var blocks = document.querySelectorAll('#multiTreatments .multi-study-block');
+    var comparator = document.getElementById('multiComparator').value.trim() || 'A';
+    var effectType = document.getElementById('multiEffectType').value;
+    var treatments = [];
+    blocks.forEach(function(bl) {
+      var name = bl.querySelector('[data-field="name"]').value.trim();
+      var eff = parseFloat(bl.querySelector('[data-field="effect"]').value);
+      var se = parseFloat(bl.querySelector('[data-field="se"]').value);
+      if (name && isFinite(eff) && isFinite(se) && se > 0) {
+        treatments.push({ name: name, effect: eff, se: se });
+      }
+    });
+    return { comparator: comparator, effectType: effectType, treatments: treatments };
+  }
+
+  function computeMulti() {
+    var data = getMultiTreatmentData();
+    if (data.treatments.length < 2) {
+      alert('Need at least 2 treatments (besides the common comparator).');
+      return;
+    }
+
+    var treatments = data.treatments;
+    var n = treatments.length;
+    var results = [];
+
+    // All pairwise indirect comparisons
+    for (var i = 0; i < n; i++) {
+      for (var j = i + 1; j < n; j++) {
+        // B vs C = (A vs C) - (A vs B)
+        var r = bucherMethod(treatments[i].effect, treatments[i].se, treatments[j].effect, treatments[j].se);
+        r.treatB = treatments[i].name;
+        r.treatC = treatments[j].name;
+        results.push(r);
+      }
+    }
+
+    lastMultiResult = { comparator: data.comparator, effectType: data.effectType, treatments: treatments, pairwise: results };
+    renderMultiResults(lastMultiResult);
+  }
+
+  function renderMultiResults(mr) {
+    var el = document.getElementById('multiResults');
+    var eLabel = effectLabel(mr.effectType);
+    var html = '';
+
+    // League table
+    var treats = mr.treatments;
+    var n = treats.length;
+    html += '<div class="card"><div class="card__header">League Table (' + escapeHtml(eLabel) + ')</div><div class="card__body" style="overflow-x:auto;">';
+    html += '<table class="data-table"><thead><tr><th></th>';
+    for (var j = 0; j < n; j++) {
+      html += '<th>' + escapeHtml(treats[j].name) + '</th>';
+    }
+    html += '</tr></thead><tbody>';
+    for (var i = 0; i < n; i++) {
+      html += '<tr><th>' + escapeHtml(treats[i].name) + '</th>';
+      for (var j2 = 0; j2 < n; j2++) {
+        if (i === j2) {
+          html += '<td style="background:var(--bg-tertiary);">-</td>';
+        } else {
+          // Find pairwise result
+          var pw = findPairwise(mr.pairwise, treats[i].name, treats[j2].name);
+          if (pw) {
+            var sig = pw.p < 0.05;
+            var cls = sig ? 'league-cell-sig' : 'league-cell-ns';
+            html += '<td class="' + cls + '" title="p=' + fmtP(pw.p) + '">' + fmt(pw.effect, 3) + '<br><span style="font-size:0.75em;color:var(--text-muted);">[' + fmt(pw.ciLow, 3) + ', ' + fmt(pw.ciHigh, 3) + ']</span></td>';
+          } else {
+            html += '<td>-</td>';
+          }
+        }
+      }
+      html += '</tr>';
+    }
+    html += '</tbody></table></div></div>';
+
+    // Ranking
+    var ranked = treats.slice().sort(function(a, b) { return b.effect - a.effect; });
+    html += '<div class="card"><div class="card__header">Ranking by Point Estimate (vs ' + escapeHtml(mr.comparator) + ')</div><div class="card__body">';
+    html += '<table class="data-table"><thead><tr><th>Rank</th><th>Treatment</th><th>' + escapeHtml(eLabel) + ' vs ' + escapeHtml(mr.comparator) + '</th><th>SE</th><th>95% CI</th></tr></thead><tbody>';
+    ranked.forEach(function(t, idx) {
+      var lo = t.effect - Z_ALPHA * t.se;
+      var hi = t.effect + Z_ALPHA * t.se;
+      html += '<tr><td>' + (idx + 1) + '</td><td>' + escapeHtml(t.name) + '</td><td>' + fmt(t.effect, 4) + '</td><td>' + fmt(t.se, 4) + '</td><td>[' + fmt(lo, 4) + ', ' + fmt(hi, 4) + ']</td></tr>';
+    });
+    html += '</tbody></table></div></div>';
+
+    // All pairwise details
+    html += '<div class="card"><div class="card__header">All Pairwise Indirect Comparisons</div><div class="card__body" style="overflow-x:auto;">';
+    html += '<table class="data-table"><thead><tr><th>Comparison</th><th>' + escapeHtml(eLabel) + '</th><th>SE</th><th>95% CI</th><th>z</th><th>p</th></tr></thead><tbody>';
+    mr.pairwise.forEach(function(pw) {
+      var sig = pw.p < 0.05;
+      html += '<tr><td>' + escapeHtml(pw.treatC) + ' vs ' + escapeHtml(pw.treatB) + '</td>';
+      html += '<td>' + fmt(pw.effect, 4) + '</td><td>' + fmt(pw.se, 4) + '</td>';
+      html += '<td>[' + fmt(pw.ciLow, 4) + ', ' + fmt(pw.ciHigh, 4) + ']</td>';
+      html += '<td>' + fmt(pw.z, 4) + '</td>';
+      html += '<td style="color:' + (sig ? 'var(--danger)' : 'inherit') + ';">' + fmtP(pw.p) + '</td></tr>';
+    });
+    html += '</tbody></table></div></div>';
+
+    el.innerHTML = html;
+  }
+
+  function findPairwise(pairwise, nameI, nameJ) {
+    // i row, j col: we want j vs i (or negated i vs j)
+    for (var k = 0; k < pairwise.length; k++) {
+      var pw = pairwise[k];
+      if (pw.treatB === nameI && pw.treatC === nameJ) {
+        return pw;  // C vs B as stored
+      }
+      if (pw.treatB === nameJ && pw.treatC === nameI) {
+        // Need to negate
+        return {
+          effect: -pw.effect,
+          se: pw.se,
+          ciLow: -pw.ciHigh,
+          ciHigh: -pw.ciLow,
+          z: -pw.z,
+          p: pw.p,
+          treatB: nameJ,
+          treatC: nameI
+        };
+      }
+    }
+    return null;
+  }
+
+  function loadMultiExample() {
+    document.getElementById('multiComparator').value = 'Placebo';
+    document.getElementById('multiEffectType').value = 'logOR';
+    document.getElementById('multiTreatments').innerHTML = '';
+    multiTreatmentCount = 0;
+
+    var data = [
+      { name: 'Drug A', effect: -0.261, se: 0.050 },
+      { name: 'Drug B', effect: -0.386, se: 0.080 },
+      { name: 'Drug C', effect: -0.150, se: 0.060 },
+      { name: 'Drug D', effect: -0.450, se: 0.100 }
+    ];
+
+    data.forEach(function(d) {
+      addMultiTreatment();
+      var block = document.getElementById('multiTreat-' + multiTreatmentCount);
+      block.querySelector('[data-field="name"]').value = d.name;
+      block.querySelector('[data-field="effect"]').value = d.effect;
+      block.querySelector('[data-field="se"]').value = d.se;
+    });
+  }
+
+  // ---- Init ----
+  function init() {
+    initTabs();
+    initDarkMode();
+    initMultiTreatments();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+
+  // ---- Public API ----
+  return {
+    compute: compute,
+    loadExample: loadExample,
+    toggleInputMode: toggleInputMode,
+    toggleMultiStudy: toggleMultiStudy,
+    toggleDirectBC: toggleDirectBC,
+    addStudyRow: addStudyRow,
+    removeStudyRow: removeStudyRow,
+    saveData: saveData,
+    loadData: loadData,
+    clearAll: clearAll,
+    addMultiTreatment: addMultiTreatment,
+    removeMultiTreatment: removeMultiTreatment,
+    computeMulti: computeMulti,
+    loadMultiExample: loadMultiExample,
+    copyText: copyText,
+    exportCSV: exportCSV,
+    exportJSON: exportJSON,
+    // Expose internals for testing
+    _bucherMethod: bucherMethod,
+    _coherenceTest: coherenceTest,
+    _poolDL: poolDL,
+    _normalCDF: normalCDF,
+    _normalQuantile: normalQuantile,
+    _seFromCI: seFromCI,
+    _csvSafe: csvSafe,
+    _escapeHtml: escapeHtml
+  };
+})();
+</script>
+</body>
+</html>
